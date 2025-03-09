@@ -4,8 +4,8 @@
     "sender": "Mittente Elminster",
     "context": "Origine sconosciuta",
     "encrypted": "qvs ybmrs cdkxxy bknexkxny pyblo xovvk pybocdk kvdk. nygbocdo wkxnkbo exk zkddeqvsk\n\nns bsmyqxslsyxo oxdby dbo qsybxs...",
-    "decrypted": "Gli orchi stanno radunando forze nella Foresta Alta. Dovreste mandare una pattuglia\n\ndi ricognizione entro tre giorni...",
-    "key": "alustriel"
+    "decrypted": "Gli orchi stanno radunando forze nella Foresta Alta. Dovreste mandare una pattuglia di ricognizione entro tre giorni...",
+    "key": "pippero"
   },
   {
     "id": 2,
@@ -13,6 +13,6 @@
     "context": "Origine sconosciuta",
     "encrypted": "aes sxslsk sv myxdoxedy oppoddsgy nov wocckqqsy.\n\naeocdy è sv docdy mro nygboffo kzzkbsbo ks qsymkdybs.",
     "decrypted": "Qui inizia il contenuto effettivo del messaggio.\n\nQuesto è il testo che dovrebbe apparire ai giocatori.",
-    "key": "orcbane"
+    "key": "faerun"
   }
 ]

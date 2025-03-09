@@ -89,8 +89,8 @@ async function processWordFile(filePath, fileName) {
                 }
             } else if (lineLower.startsWith('contesto:')) {
                 context = line.substring('contesto:'.length).trim();
-            } else if (lineLower.startsWith('chiave:')) {
-                key = line.substring('chiave:'.length).trim().toLowerCase();
+            } else if (lineLower.startsWith('Chiave:')) {
+                key = line.substring('Chiave:'.length).trim().toLowerCase();
             }
         });
         
