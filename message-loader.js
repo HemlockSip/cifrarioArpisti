@@ -32,6 +32,30 @@ function generateEncryptedText(text) {
     ).join('');
 }
 
+// Funzione per pulire completamente il messaggio decifrato da metadati
+function cleanDecryptedMessage(text, key) {
+    // Divide il testo in righe
+    let lines = text.split('\n');
+    
+    // Filtra righe che contengono metadati
+    lines = lines.filter(line => {
+        const lowerLine = line.toLowerCase().trim();
+        return !(
+            lowerLine.startsWith('mittente:') ||
+            lowerLine.startsWith('contesto:') ||
+            lowerLine.startsWith('chiave:') ||
+            lowerLine === key.toLowerCase() // Rimuovi anche righe che sono solo la chiave
+        );
+    });
+    
+    // Rimuovi righe vuote all'inizio
+    while (lines.length > 0 && lines[0].trim() === '') {
+        lines.shift();
+    }
+    
+    return lines.join('\n');
+}
+
 // Funzione per leggere e processare un singolo file Word
 async function processWordFile(filePath, fileName) {
     try {
@@ -42,25 +66,21 @@ async function processWordFile(filePath, fileName) {
         // Dividi il contenuto in base alle righe vuote
         const sections = content.split(/\n\s*\n/);
         
-        // Assicurati che ci siano almeno due sezioni (intestazione e messaggio)
-        if (sections.length < 2) {
+        // Assicurati che ci siano almeno due sezioni
+        if (sections.length < 1) {
             console.error(`Errore: il file ${fileName} non ha il formato corretto.`);
             return null;
         }
         
-        // Estrai le informazioni dal contenuto
-        const headerInfo = sections[0].split('\n');
-        
-        // Prendi solo le sezioni di contenuto (salta l'intestazione) e uniscile
-        // Questo assicura che il messaggio decifrato non contenga metadati
-        const messageContent = sections.slice(1).join('\n\n').trim();
+        // Estrai le informazioni dall'intestazione (prima sezione)
+        const headerLines = sections[0].split('\n');
         
         // Estrai mittente, contesto e chiave (se specificata)
         let sender = 'Mittente Sconosciuto';
         let context = 'Origine sconosciuta';
-        let key = null; // Inizializza la chiave come null
+        let key = null;
         
-        headerInfo.forEach(line => {
+        headerLines.forEach(line => {
             const lineLower = line.toLowerCase().trim();
             if (lineLower.startsWith('mittente:')) {
                 sender = line.substring('mittente:'.length).trim();
@@ -70,7 +90,6 @@ async function processWordFile(filePath, fileName) {
             } else if (lineLower.startsWith('contesto:')) {
                 context = line.substring('contesto:'.length).trim();
             } else if (lineLower.startsWith('chiave:')) {
-                // Estrai la chiave personalizzata
                 key = line.substring('chiave:'.length).trim().toLowerCase();
             }
         });
@@ -83,8 +102,11 @@ async function processWordFile(filePath, fileName) {
             console.log(`${fileName}: Utilizzata chiave personalizzata: ${key}`);
         }
         
+        // Pulisci il contenuto del messaggio da tutti i metadati
+        const cleanedContent = cleanDecryptedMessage(content, key);
+        
         // Genera un testo cifrato per la visualizzazione
-        const encrypted = generateEncryptedText(messageContent);
+        const encrypted = generateEncryptedText(cleanedContent);
         
         // Crea l'oggetto messaggio
         return {
@@ -92,7 +114,7 @@ async function processWordFile(filePath, fileName) {
             sender,
             context,
             encrypted,
-            decrypted: messageContent,
+            decrypted: cleanedContent,
             key
         };
     } catch (error) {

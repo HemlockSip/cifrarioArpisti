@@ -3,8 +3,16 @@
     "id": 1,
     "sender": "Mittente Elminster",
     "context": "Origine sconosciuta",
-    "encrypted": "myxdocdy: dbygkdy xos cyddobbkxos ns hkdobnooz\n\nmrskgo: csvgobwyyx\n\nqvs ybmrs cdkxxy bknexkxny pyblo xovvk pybocdk kvdk. nygbocdo wkxnkbo exk zkddeqvsk\n\nns bsmyqxslsyxo oxdby dbo qsybxs...",
-    "decrypted": "Contesto: Trovato nei sotterranei di Waterdeep\n\nChiave: silvermoon\n\nGli orchi stanno radunando forze nella Foresta Alta. Dovreste mandare una pattuglia\n\ndi ricognizione entro tre giorni...",
-    "key": "mystra"
+    "encrypted": "qvs ybmrs cdkxxy bknexkxny pyblo xovvk pybocdk kvdk. nygbocdo wkxnkbo exk zkddeqvsk\n\nns bsmyqxslsyxo oxdby dbo qsybxs...",
+    "decrypted": "Gli orchi stanno radunando forze nella Foresta Alta. Dovreste mandare una pattuglia\n\ndi ricognizione entro tre giorni...",
+    "key": "alustriel"
+  },
+  {
+    "id": 2,
+    "sender": "Mittente Nome del Mittente",
+    "context": "Origine sconosciuta",
+    "encrypted": "aes sxslsk sv myxdoxedy oppoddsgy nov wocckqqsy.\n\naeocdy è sv docdy mro nygboffo kzzkbsbo ks qsymkdybs.",
+    "decrypted": "Qui inizia il contenuto effettivo del messaggio.\n\nQuesto è il testo che dovrebbe apparire ai giocatori.",
+    "key": "orcbane"
   }
 ]

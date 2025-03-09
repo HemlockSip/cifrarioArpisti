@@ -110,9 +110,9 @@ function decryptMessage() {
     const enteredKey = keyInput.value.trim().toLowerCase();
     
     if (enteredKey === selectedMessage.key) {
-        // Chiave corretta
-        // Mostra solo il messaggio decifrato, senza i metadati (come contesto o chiave)
-        decryptedMessage.textContent = selectedMessage.decrypted;
+        // Chiave corretta - Pulisci ulteriormente il messaggio da eventuali metadati residui
+        const cleanedMessage = cleanDecryptedMessage(selectedMessage.decrypted, enteredKey);
+        decryptedMessage.textContent = cleanedMessage;
         keyInputModal.style.display = 'none';
         decryptedMessageModal.style.display = 'flex';
     } else {
@@ -142,6 +142,57 @@ function setupEventListeners() {
             decryptMessage();
         }
     });
+}
+
+// Funzione per rimuovere eventuali metadati dal messaggio decifrato
+function cleanMessage(message) {
+    // Cerca pattern comuni di metadati come "Contesto:", "Chiave:", ecc.
+    const lines = message.split('\n');
+    const cleanedLines = [];
+    let metadataSection = true;
+    
+    for (const line of lines) {
+        // Se troviamo una riga vuota dopo l'intestazione, inizia la sezione del messaggio
+        if (metadataSection && line.trim() === '') {
+            metadataSection = false;
+            continue;
+        }
+        
+        // Se siamo già nella sezione del messaggio o se la riga non sembra un metadato
+        if (!metadataSection || !(line.toLowerCase().startsWith('mittente:') || 
+                                 line.toLowerCase().startsWith('contesto:') || 
+                                 line.toLowerCase().startsWith('chiave:'))) {
+            cleanedLines.push(line);
+        }
+    }
+    
+    return cleanedLines.join('\n').trim();
+}
+
+
+// Funzione per pulire il messaggio decifrato da eventuali metadati residui
+function cleanDecryptedMessage(text, key) {
+    // Divide il testo in righe
+    let lines = text.split('\n');
+    
+    // Rimuovi le righe che contengono metadati conosciuti
+    lines = lines.filter(line => {
+        const lowerLine = line.toLowerCase().trim();
+        return !(
+            lowerLine.startsWith('mittente:') ||
+            lowerLine.startsWith('contesto:') ||
+            lowerLine.startsWith('chiave:') ||
+            lowerLine === key.toLowerCase() || // Rimuovi anche righe che sono solo la chiave
+            lowerLine.includes(`chiave: ${key.toLowerCase()}`) // Rimuovi righe che contengono la chiave
+        );
+    });
+    
+    // Rimuovi righe vuote all'inizio
+    while (lines.length > 0 && lines[0].trim() === '') {
+        lines.shift();
+    }
+    
+    return lines.join('\n');
 }
 
 // Inizializza l'app
