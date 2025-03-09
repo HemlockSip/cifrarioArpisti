@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cifrario degli Arpisti</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        h1 {
+            margin: 0;
+            color: #333;
+        }
+        
+        main {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .message-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .message-card {
+            display: flex;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .message-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-icon {
+            width: 80px;
+            background-color: #ececec;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .message-icon img {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .message-info {
+            padding: 1rem;
+            flex: 1;
+        }
+        
+        .message-sender {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .message-context {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .key-input-container {
+            margin: 1.5rem 0;
+        }
+        
+        .key-input {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .decrypt-button {
+            background-color: #4c5fd5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem auto;
+        }
+        
+        .decrypt-button:hover {
+            background-color: #3a4bb3;
+        }
+        
+        .lock-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .back-button {
+            background-color: transparent;
+            border: 1px solid #ddd;
+            color: #666;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .back-button:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .home-icon {
+            margin-right: 0.5rem;
+        }
+        
+        .message-display {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .error-message {
+            color: #d9534f;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cifrario degli Arpisti</h1>
+    </header>
+    
+    <main id="app">
+        <!-- Elenco Messaggi -->
+        <div class="message-view" id="messageListView">
+            <h2>Messaggi Disponibili</h2>
+            <div class="message-list" id="messageList">
+                <!-- I messaggi verranno inseriti qui dinamicamente -->
+            </div>
+        </div>
+        
+        <!-- Modal per l'inserimento della chiave -->
+        <div class="modal" id="keyInputModal">
+            <div class="modal-content">
+                <h3>Digita la Chiave di Lettura</h3>
+                <div class="key-input-container">
+                    <input type="password" class="key-input" id="keyInput" placeholder="Inserisci la chiave...">
+                </div>
+                <button class="decrypt-button" id="decryptButton">
+                    <span class="lock-icon">🔓</span> Decifra
+                </button>
+                <button class="back-button" id="backToListFromKey">
+                    <span class="home-icon">🏠</span> Messaggi Disponibili
+                </button>
+            </div>
+        </div>
+        
+        <!-- Visualizzazione del messaggio decifrato -->
+        <div class="modal" id="decryptedMessageModal">
+            <div class="modal-content">
+                <h3>Il messaggio prende forma davanti ai tuoi occhi</h3>
+                <div class="message-display" id="decryptedMessage">
+                    <!-- Qui verrà visualizzato il messaggio decifrato -->
+                </div>
+                <button class="back-button" id="backToListFromMessage">
+                    <span class="home-icon">🏠</span> Messaggi Disponibili
+                </button>
+            </div>
+        </div>
+        
+        <!-- Messaggio di errore -->
+        <div class="modal" id="errorMessageModal">
+            <div class="modal-content">
+                <h3>Il messaggio che prende forma davanti ai tuoi occhi non sembra avere alcun senso compiuto.</h3>
+                <p class="error-message">Probabilmente la chiave di lettura non è corretta.</p>
+                <button class="back-button" id="backToKeyInput">
+                    <span class="lock-icon">🔑</span> Riprova
+                </button>
+                <button class="back-button" id="backToListFromError">
+                    <span class="home-icon">🏠</span> Messaggi Disponibili
+                </button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Dati di esempio per i messaggi
+        const messages = [
+            { id: 1, sender: "Mittente Elminster", context: "Trovato nei sotterranei di Waterdeep", encrypted: "Lwpv Bbmwl osbpo hzwadof szalowbp yoddodwh.", decrypted: "Gli orchi stanno radunando forze nella Foresta Alta.", key: "arpisti" },
+            { id: 2, sender: "Mittente Khelben", context: "Messaggio intercettato da una carovana", encrypted: "Hmzwb bzsoxm kpswozd lwsvo noddw sxboafswxo.", decrypted: "Agenti nemici stanno cercando gli anelli del potere.", key: "harpers" },
+            { id: 3, sender: "Mittente Alustriel", context: "Lasciato nella locanda del Drago Verde", encrypted: "Dkvmobo sx poabk pwamzo ecsxnsms lswzxs.", decrypted: "Trovatevi al porto fra quindici giorni.", key: "mystra" },
+            { id: 4, sender: "Mittente Storm", context: "Consegnato da un messaggero incappucciato", encrypted: "Sd bovrssw ms Mfkxbwz o abkbw zsbzwdkbw.", decrypted: "Il tempio di Cyanbor è stato ritrovato.", key: "torm" },
+            { id: 5, sender: "Mittente Laerel", context: "Arrotolato in un bastone cavo", encrypted: "Cxk arsk ns rwbbsdo zozbk xs rwxbkpxo noddoab.", decrypted: "Una spia di Zhentil opera in montagne dell'est.", key: "elminster" },
+            { id: 6, sender: "Mittente Dove", context: "Nascosto in un libro nella biblioteca", encrypted: "Sd pzkmwx nsamoawdw ms Ddhbz as o zsaeopdsw.", decrypted: "Il drago discepolo di Tiamat si è risvegliato.", key: "selune" },
+            { id: 7, sender: "Mittente Mirt", context: "Affidato a un mercante di passaggio", encrypted: "Dswbbo kwddzwaaswkzas kd Mwxbsxoxbo Kxbsmw.", decrypted: "Dovete avvicinarvi al Continente Antico.", key: "drizzt" },
+            { id: 8, sender: "Mittente Vajra", context: "Ritrovato in un baule sigillato", encrypted: "Cwdbsrdsms akkaaasxs acddw bzkmmso nopds Kzrsabs.", decrypted: "Numerosi assassini sulle tracce degli Arpisti.", key: "faerun" },
+            { id: 9, sender: "Mittente Arilyn", context: "Consegnato da un falco messaggero", encrypted: "Mozkmbo cxk wzk ns fkzmk k xwzn ns Xodeozesxboz.", decrypted: "Cercate una ora di barca a nord di Neverwinter.", key: "orcbane" },
+        ];
+        
+        // Elementi DOM
+        const messageListView = document.getElementById('messageListView');
+        const messageList = document.getElementById('messageList');
+        const keyInputModal = document.getElementById('keyInputModal');
+        const keyInput = document.getElementById('keyInput');
+        const decryptButton = document.getElementById('decryptButton');
+        const decryptedMessageModal = document.getElementById('decryptedMessageModal');
+        const decryptedMessage = document.getElementById('decryptedMessage');
+        const errorMessageModal = document.getElementById('errorMessageModal');
+        const backToKeyInput = document.getElementById('backToKeyInput');
+        const backToListFromKey = document.getElementById('backToListFromKey');
+        const backToListFromMessage = document.getElementById('backToListFromMessage');
+        const backToListFromError = document.getElementById('backToListFromError');
+        
+        let selectedMessage = null;
+        
+        // Popola la lista dei messaggi
+        function populateMessageList() {
+            messageList.innerHTML = '';
+            
+            messages.forEach(message => {
+                const card = document.createElement('div');
+                card.className = 'message-card';
+                card.dataset.id = message.id;
+                
+                card.innerHTML = `
+                    <div class="message-icon">
+                        <img src="/api/placeholder/80/80" alt="Messaggio">
+                    </div>
+                    <div class="message-info">
+                        <div class="message-sender">${message.sender}</div>
+                        <div class="message-context">${message.context}</div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => openKeyModal(message));
+                
+                messageList.appendChild(card);
+            });
+        }
+        
+        // Apre il modal per l'inserimento della chiave
+        function openKeyModal(message) {
+            selectedMessage = message;
+            messageListView.style.display = 'none';
+            keyInputModal.style.display = 'flex';
+            keyInput.value = '';
+            keyInput.focus();
+        }
+        
+        // Torna alla lista dei messaggi
+        function backToList() {
+            keyInputModal.style.display = 'none';
+            decryptedMessageModal.style.display = 'none';
+            errorMessageModal.style.display = 'none';
+            messageListView.style.display = 'block';
+        }
+        
+        // Prova a decifrare il messaggio
+        function decryptMessage() {
+            const enteredKey = keyInput.value.trim().toLowerCase();
+            
+            if (enteredKey === selectedMessage.key) {
+                // Chiave corretta
+                decryptedMessage.textContent = selectedMessage.decrypted;
+                keyInputModal.style.display = 'none';
+                decryptedMessageModal.style.display = 'flex';
+            } else {
+                // Chiave errata
+                keyInputModal.style.display = 'none';
+                errorMessageModal.style.display = 'flex';
+            }
+        }
+        
+        // Event Listeners
+        decryptButton.addEventListener('click', decryptMessage);
+        backToKeyInput.addEventListener('click', () => {
+            errorMessageModal.style.display = 'none';
+            keyInputModal.style.display = 'flex';
+            keyInput.focus();
+        });
+        
+        backToListFromKey.addEventListener('click', backToList);
+        backToListFromMessage.addEventListener('click', backToList);
+        backToListFromError.addEventListener('click', backToList);
+        
+        // Gestisce l'invio da tastiera
+        keyInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                decryptMessage();
+            }
+        });
+        
+        // Inizializza l'app
+        populateMessageList();
+    </script>
+</body>
+</html>
