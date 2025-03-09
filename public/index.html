@@ -46,6 +46,18 @@
             margin-top: 1rem;
         }
         
+        @media (max-width: 992px) {
+            .message-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .message-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         .message-card {
             display: flex;
             border: 1px solid #ddd;
@@ -173,11 +185,41 @@
             text-align: left;
             max-height: 400px;
             overflow-y: auto;
+            white-space: pre-line; /* Preserva le interruzioni di riga nel messaggio */
         }
         
         .error-message {
             color: #d9534f;
             margin: 1rem 0;
+        }
+        
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem;
+        }
+        
+        .loading-icon {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #4c5fd5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-messages {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
         }
     </style>
 </head>
@@ -191,7 +233,16 @@
         <div class="message-view" id="messageListView">
             <h2>Messaggi Disponibili</h2>
             <div class="message-list" id="messageList">
-                <!-- I messaggi verranno inseriti qui dinamicamente -->
+                <!-- Stato di caricamento -->
+                <div class="loading" id="loadingIndicator">
+                    <div class="loading-icon"></div>
+                    <p>Caricamento dei messaggi...</p>
+                </div>
+                
+                <!-- Messaggio di nessun messaggio disponibile -->
+                <div class="no-messages" id="noMessagesIndicator" style="display: none;">
+                    <p>Nessun messaggio disponibile al momento.</p>
+                </div>
             </div>
         </div>
         
@@ -240,22 +291,11 @@
     </main>
     
     <script>
-        // Dati di esempio per i messaggi
-        const messages = [
-            { id: 1, sender: "Mittente Elminster", context: "Trovato nei sotterranei di Waterdeep", encrypted: "Lwpv Bbmwl osbpo hzwadof szalowbp yoddodwh.", decrypted: "Gli orchi stanno radunando forze nella Foresta Alta.", key: "arpisti" },
-            { id: 2, sender: "Mittente Khelben", context: "Messaggio intercettato da una carovana", encrypted: "Hmzwb bzsoxm kpswozd lwsvo noddw sxboafswxo.", decrypted: "Agenti nemici stanno cercando gli anelli del potere.", key: "harpers" },
-            { id: 3, sender: "Mittente Alustriel", context: "Lasciato nella locanda del Drago Verde", encrypted: "Dkvmobo sx poabk pwamzo ecsxnsms lswzxs.", decrypted: "Trovatevi al porto fra quindici giorni.", key: "mystra" },
-            { id: 4, sender: "Mittente Storm", context: "Consegnato da un messaggero incappucciato", encrypted: "Sd bovrssw ms Mfkxbwz o abkbw zsbzwdkbw.", decrypted: "Il tempio di Cyanbor è stato ritrovato.", key: "torm" },
-            { id: 5, sender: "Mittente Laerel", context: "Arrotolato in un bastone cavo", encrypted: "Cxk arsk ns rwbbsdo zozbk xs rwxbkpxo noddoab.", decrypted: "Una spia di Zhentil opera in montagne dell'est.", key: "elminster" },
-            { id: 6, sender: "Mittente Dove", context: "Nascosto in un libro nella biblioteca", encrypted: "Sd pzkmwx nsamoawdw ms Ddhbz as o zsaeopdsw.", decrypted: "Il drago discepolo di Tiamat si è risvegliato.", key: "selune" },
-            { id: 7, sender: "Mittente Mirt", context: "Affidato a un mercante di passaggio", encrypted: "Dswbbo kwddzwaaswkzas kd Mwxbsxoxbo Kxbsmw.", decrypted: "Dovete avvicinarvi al Continente Antico.", key: "drizzt" },
-            { id: 8, sender: "Mittente Vajra", context: "Ritrovato in un baule sigillato", encrypted: "Cwdbsrdsms akkaaasxs acddw bzkmmso nopds Kzrsabs.", decrypted: "Numerosi assassini sulle tracce degli Arpisti.", key: "faerun" },
-            { id: 9, sender: "Mittente Arilyn", context: "Consegnato da un falco messaggero", encrypted: "Mozkmbo cxk wzk ns fkzmk k xwzn ns Xodeozesxboz.", decrypted: "Cercate una ora di barca a nord di Neverwinter.", key: "orcbane" },
-        ];
-        
         // Elementi DOM
         const messageListView = document.getElementById('messageListView');
         const messageList = document.getElementById('messageList');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const noMessagesIndicator = document.getElementById('noMessagesIndicator');
         const keyInputModal = document.getElementById('keyInputModal');
         const keyInput = document.getElementById('keyInput');
         const decryptButton = document.getElementById('decryptButton');
@@ -267,12 +307,57 @@
         const backToListFromMessage = document.getElementById('backToListFromMessage');
         const backToListFromError = document.getElementById('backToListFromError');
         
+        let messages = [];
         let selectedMessage = null;
+        
+        // Carica i messaggi dal file JSON
+        async function loadMessages() {
+            try {
+                // Mostra l'indicatore di caricamento
+                loadingIndicator.style.display = 'flex';
+                noMessagesIndicator.style.display = 'none';
+                
+                // Carica il file JSON con i messaggi
+                const response = await fetch('messages.json');
+                
+                if (!response.ok) {
+                    throw new Error(`Errore nel caricamento dei messaggi: ${response.status}`);
+                }
+                
+                messages = await response.json();
+                
+                // Nascondi l'indicatore di caricamento
+                loadingIndicator.style.display = 'none';
+                
+                // Mostra un messaggio se non ci sono messaggi disponibili
+                if (messages.length === 0) {
+                    noMessagesIndicator.style.display = 'block';
+                } else {
+                    populateMessageList();
+                }
+            } catch (error) {
+                console.error('Errore durante il caricamento dei messaggi:', error);
+                loadingIndicator.style.display = 'none';
+                
+                // In caso di errore, mostra il messaggio di nessun messaggio disponibile
+                noMessagesIndicator.style.display = 'block';
+                noMessagesIndicator.innerHTML = `
+                    <p>Impossibile caricare i messaggi.</p>
+                    <p>Errore: ${error.message}</p>
+                `;
+            }
+        }
         
         // Popola la lista dei messaggi
         function populateMessageList() {
+            // Rimuovi il loading e no messages indicator
+            loadingIndicator.style.display = 'none';
+            noMessagesIndicator.style.display = 'none';
+            
+            // Pulisci la lista
             messageList.innerHTML = '';
             
+            // Aggiungi le card dei messaggi
             messages.forEach(message => {
                 const card = document.createElement('div');
                 card.className = 'message-card';
@@ -347,7 +432,7 @@
         });
         
         // Inizializza l'app
-        populateMessageList();
+        document.addEventListener('DOMContentLoaded', loadMessages);
     </script>
 </body>
 </html>
