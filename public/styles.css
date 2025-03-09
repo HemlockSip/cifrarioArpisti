@@ -1,16 +1,38 @@
 /* Stili per il Cifrario degli Arpisti */
 
+:root {
+    --primary-color: #4c5fd5;
+    --primary-hover: #3a4bb3;
+    --text-main: #1b1212;
+    --text-secondary: #666;
+    --border-color: #ddd;
+    --bg-light: #f8f8f8;
+    --shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    --border-radius: 4px;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+  }
+
+.metamorphous-regular {
+    font-family: "Metamorphous", serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Metamorphous", serif;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: #f8f4e6;
 }
 
 header {
-    background-color: #f8f8f8;
+    background-color: #f6eac5;
     border-bottom: 1px solid #ddd;
     padding: 1rem;
     text-align: center;
@@ -18,7 +40,7 @@ header {
 
 h1 {
     margin: 0;
-    color: #333;
+    color: #1b1212;
 }
 
 main {
@@ -69,7 +91,7 @@ main {
 
 .message-icon {
     width: 80px;
-    background-color: #ececec;
+    background-color: #f6eac5;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -83,6 +105,7 @@ main {
 .message-info {
     padding: 1rem;
     flex: 1;
+    background-color: #f6eac5;
 }
 
 .message-sender {
@@ -109,7 +132,7 @@ main {
 }
 
 .modal-content {
-    background-color: #fff;
+    background-color: #f6eac5;
     padding: 2rem;
     border-radius: 8px;
     max-width: 500px;
@@ -127,6 +150,7 @@ main {
     font-size: 1rem;
     border: 1px solid #ddd;
     border-radius: 4px;
+
 }
 
 .decrypt-button {
@@ -184,7 +208,7 @@ main {
 }
 
 .error-message {
-    color: #d9534f;
+    color: #471d1c;
     margin: 1rem 0;
 }
 
@@ -216,3 +240,26 @@ main {
     padding: 2rem;
     color: #666;
 }
+
+
+
+
+@media (max-width: 576px) {
+    body {
+      font-size: 14px; /* Leggermente più piccolo su mobile */
+    }
+    
+    .modal-content {
+      padding: 1.5rem; /* Meno padding su schermi piccoli */
+      max-width: 90%;
+    }
+    
+    /* Stack di bottoni verticale su mobile */
+    .modal-content .back-button,
+    .modal-content .decrypt-button {
+      width: 100%;
+      margin: 0.5rem 0;
+    }
+  }
+
+  
