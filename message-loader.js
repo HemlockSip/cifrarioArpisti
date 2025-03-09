@@ -8,8 +8,8 @@ const MESSAGES_DIR = './messages';
 // File di output per i messaggi JSON
 const OUTPUT_FILE = './public/messages.json';
 
-// Chiavi di cifratura disponibili
-const CIPHER_KEYS = [
+// Chiavi di cifratura predefinite (utilizzate solo se non è specificata una chiave personalizzata)
+const DEFAULT_CIPHER_KEYS = [
     'arpisti', 'harpers', 'mystra', 'torm', 'elminster', 
     'selune', 'drizzt', 'faerun', 'orcbane', 'waterdeep',
     'volo', 'laeral', 'blackstaff', 'alustriel'
@@ -42,7 +42,7 @@ async function processWordFile(filePath, fileName) {
         // Dividi il contenuto in base alle righe vuote
         const sections = content.split(/\n\s*\n/);
         
-        // Assicurati che ci siano almeno due sezioni (mittente/contesto e messaggio)
+        // Assicurati che ci siano almeno due sezioni (intestazione e messaggio)
         if (sections.length < 2) {
             console.error(`Errore: il file ${fileName} non ha il formato corretto.`);
             return null;
@@ -50,22 +50,38 @@ async function processWordFile(filePath, fileName) {
         
         // Estrai le informazioni dal contenuto
         const headerInfo = sections[0].split('\n');
-        const messageContent = sections[1].trim();
         
-        // Estrai mittente e contesto (presupponendo che siano nella prima sezione)
+        // Prendi solo le sezioni di contenuto (salta l'intestazione) e uniscile
+        // Questo assicura che il messaggio decifrato non contenga metadati
+        const messageContent = sections.slice(1).join('\n\n').trim();
+        
+        // Estrai mittente, contesto e chiave (se specificata)
         let sender = 'Mittente Sconosciuto';
         let context = 'Origine sconosciuta';
+        let key = null; // Inizializza la chiave come null
         
         headerInfo.forEach(line => {
-            if (line.toLowerCase().startsWith('mittente:')) {
-                sender = `Mittente ${line.substring('mittente:'.length).trim()}`;
-            } else if (line.toLowerCase().startsWith('contesto:')) {
+            const lineLower = line.toLowerCase().trim();
+            if (lineLower.startsWith('mittente:')) {
+                sender = line.substring('mittente:'.length).trim();
+                if (!sender.startsWith('Mittente ')) {
+                    sender = `Mittente ${sender}`;
+                }
+            } else if (lineLower.startsWith('contesto:')) {
                 context = line.substring('contesto:'.length).trim();
+            } else if (lineLower.startsWith('chiave:')) {
+                // Estrai la chiave personalizzata
+                key = line.substring('chiave:'.length).trim().toLowerCase();
             }
         });
         
-        // Genera una chiave casuale dall'array delle chiavi disponibili
-        const key = CIPHER_KEYS[Math.floor(Math.random() * CIPHER_KEYS.length)];
+        // Se non è stata specificata una chiave, selezionane una casuale dall'elenco predefinito
+        if (!key) {
+            key = DEFAULT_CIPHER_KEYS[Math.floor(Math.random() * DEFAULT_CIPHER_KEYS.length)];
+            console.log(`${fileName}: Nessuna chiave specificata, assegnata chiave predefinita: ${key}`);
+        } else {
+            console.log(`${fileName}: Utilizzata chiave personalizzata: ${key}`);
+        }
         
         // Genera un testo cifrato per la visualizzazione
         const encrypted = generateEncryptedText(messageContent);
@@ -102,6 +118,7 @@ async function processAllMessages() {
         
         if (files.length === 0) {
             console.log(`Nessun file Word (.docx) trovato nella cartella ${MESSAGES_DIR}.`);
+            console.log('Crea dei file Word seguendo il template e inseriscili nella cartella messages/');
             return;
         }
         

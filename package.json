@@ -1,0 +1,23 @@
+{
+    "name": "cifrario-arpisti",
+    "version": "1.0.0",
+    "description": "Web App per gestire le comunicazioni riservate tra gli arpisti",
+    "main": "index.js",
+    "scripts": {
+      "start": "node server.js",
+      "generate-messages": "node message-loader.js",
+      "dev": "npm run generate-messages && node server.js"
+    },
+    "keywords": [
+      "rpg",
+      "forgotten-realms",
+      "arpisti",
+      "cifrario"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+      "express": "^4.18.2",
+      "mammoth": "^1.6.0"
+    }
+  }
