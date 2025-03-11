@@ -262,4 +262,18 @@ main {
     }
   }
 
+.message-icon {
+    width: 80px;
+    background-color: #f6eac5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.message-icon svg {
+    width: 60px;
+    height: 60px;
+}
+
   
